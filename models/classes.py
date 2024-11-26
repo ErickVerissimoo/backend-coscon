@@ -16,12 +16,28 @@ class Post(db.Model):
     body = db.Column(db.String(1000), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=func.now())
     usuario_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    comentarios = db.relationship('Comentario', backref='internauta', lazy=True)
+class Comentario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    comment = db.Column(db.String(2000), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+
 
 schema = Schema({
     'username': Length(min=3),
     'password': Length(min=9),
     'email': Email()
 })
+
+def comentar(coment, idpost):
+    
+    comente = Comentario()
+    comente.comment = coment
+    comente.post_id = idpost
+
+    
+    db.session.add(comente)
+
 def isValid(username, email, password):
     try:
         schema({'username': username, 'password': password, 'email': email})      
@@ -29,7 +45,11 @@ def isValid(username, email, password):
     except Invalid as inv:
         print(f'Dado inválido: {inv}')
         return False
-    
+
+def getFeed():
+    return db.session.query('SELECT * FROM POST');
+
+
 def addUser(username, email, password):
     if isValid(username, email, password):
         usuario = User()
