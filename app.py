@@ -6,7 +6,7 @@ app = create_app()
 
 @app.route('/api/cadastro', methods=['POST'])
 def cadastrar(): 
-    data = request.json
+    data = request.json()
     addUser(data.get('username'), data.get('email'),  data.get('password'))
     return jsonify({"Mensagem": "usuario cadastrado com sucesso!"})
 
@@ -14,7 +14,7 @@ def cadastrar():
 @app.route('/api/comentar', methods=['POST'])
 def comentar():
     return jsonify({'mnsgm': 'Comentado'})
-@app.route('/api/login')
+@app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
     email = data.get('email')
