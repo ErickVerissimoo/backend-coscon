@@ -1,10 +1,13 @@
+from functools import wraps
+
+from flask import jsonify, request
 from models.database import db
 from sqlalchemy.sql import func
 from voluptuous import Schema, Invalid, Email, Length
 class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    sessionId = db.Column(db.String)
+    sessionId = db.Column(db.Text, nullable=False)
     username = db.Column(db.String(40), nullable=False)
     email= db.Column(db.String(100), nullable=False, unique= True)
     password = db.Column(db.String(50), nullable=False)
@@ -23,6 +26,15 @@ class Comentario(db.Model):
     comment = db.Column(db.String(2000), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
+def cookie_required(cookie_name):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if cookie_name not in request.cookies:
+                return jsonify({"msg": "Acesso negado! Cookie não encontrado."}), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 schema = Schema({
     'username': Length(min=3),
@@ -65,3 +77,7 @@ def addUser(username, email, password):
         db.session.commit()
     else:
         raise ValueError('Dados inválidos')
+def findByEmailAndSenha(email: str, password: str) -> User:
+    user = User.query.filter_by(email=email, password=password).first_or_404()
+    
+    return user
