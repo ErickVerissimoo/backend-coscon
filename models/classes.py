@@ -4,6 +4,7 @@ from voluptuous import Schema, Invalid, Email, Length
 class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
+    sessionId = db.Column(db.String)
     username = db.Column(db.String(40), nullable=False)
     email= db.Column(db.String(100), nullable=False, unique= True)
     password = db.Column(db.String(50), nullable=False)
@@ -28,7 +29,11 @@ schema = Schema({
     'password': Length(min=9),
     'email': Email()
 })
-
+def authenticate(email, senha):
+    usuario = User.query.filter_by(email=email, senha=senha).first()
+    if usuario is not None:
+        return True
+    return False
 def comentar(coment, idpost):
     
     comente = Comentario()
@@ -47,7 +52,7 @@ def isValid(username, email, password):
         return False
 
 def getFeed():
-    return db.session.query('SELECT * FROM POST');
+    return db.session.query(Post).all()
 
 
 def addUser(username, email, password):

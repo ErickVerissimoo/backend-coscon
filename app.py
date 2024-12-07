@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, make_response, session
 from models.classes import *
 from models.database import *
 import json
@@ -15,8 +15,17 @@ def cadastrar():
 def comentar():
     data = request.json
     
-
-
+@app.route('/api/login')
+def login():
+    data = request.json
+    email = data.get('email')
+    senha = data.get('password')
+    if authenticate(email, senha):
+        response = make_response('autenticado')
+        session_id = session.sid if hasattr(session, 'sid') else None
+        response.set_cookie('sessionId', session_id, httponly=True)
+        return response
+    return jsonify({'Mensagem': 'Erro de autenticação'}, 404)
 @app.route('/api/feed', methods =['GET'] )
 def feed():
     return json.dumps(getFeed())
